@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Weekly Report — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Weekly Wellness Report</h2>
+    <p class="text-secondary">Your personalized mental wellness summary for the past 7 days</p>
+  </div>
+
+  {% if not report %}
+  <div class="text-center py-5 text-secondary">
+    <i class="bi bi-bar-chart fs-1 d-block mb-3"></i>
+    <h5>Not enough data yet</h5>
+    <p>Log your mood for at least a few days to generate your weekly report.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-2">Start Logging</a>
+  </div>
+
+  {% else %}
+  <!-- AVG SCORE -->
+  <div class="card border-0 bg-card p-4 mb-4 text-center">
+    <div class="display-4 fw-bold text-primary">{{ avg_score }}<span class="fs-4 text-secondary">/10</span></div>
+    <p class="text-secondary mb-0">Average mood this week</p>
+  </div>
+
+  <!-- OVERALL ASSESSMENT -->
+  <div class="card border-0 bg-card p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-chat-quote text-info me-2"></i>AI Summary</h5>
+    <p class="mb-0 text-white-75">{{ report.overall_assessment }}</p>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- HIGHLIGHTS -->
+    {% if report.highlights %}
+    <div class="col-md-6">
+      <div class="card border-0 bg-card p-4 h-100">
+        <h5 class="fw-bold mb-3 text-success"><i class="bi bi-check-circle me-2"></i>Highlights</h5>
+        <ul class="list-unstyled mb-0">
+          {% for h in report.highlights %}
+          <li class="d-flex align-items-start gap-2 mb-2">
+            <i class="bi bi-star-fill text-warning mt-1"></i>
+            <span class="text-white-75">{{ h }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- AREAS TO WATCH -->
+    {% if report.areas_to_watch %}
+    <div class="col-md-6">
+      <div class="card border-0 bg-card p-4 h-100">
+        <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-eye me-2"></i>Areas to Watch</h5>
+        <ul class="list-unstyled mb-0">
+          {% for a in report.areas_to_watch %}
+          <li class="d-flex align-items-start gap-2 mb-2">
+            <i class="bi bi-exclamation-circle text-warning mt-1"></i>
+            <span class="text-white-75">{{ a }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  {% if report.recommendations %}
+  <div class="card border-0 bg-card p-4 mb-4">
+    <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-lightbulb me-2"></i>Recommendations</h5>
+    <div class="row g-3">
+      {% for rec in report.recommendations %}
+      <div class="col-md-4">
+        <div class="recommendation-item p-3 rounded-3">
+          <i class="bi bi-arrow-right-circle text-primary me-2"></i>
+          <span class="text-white-75">{{ rec }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- MOTIVATIONAL MESSAGE -->
+  <div class="card border-0 p-4 motivational-card text-center">
+    <i class="bi bi-heart-fill text-danger fs-3 mb-3 d-block"></i>
+    <p class="fs-5 fw-medium mb-0">{{ report.motivational_message }}</p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="row g-3 mt-4">
+    <div class="col-md-4">
+      <a href="{{ url_for('chat') }}" class="btn btn-primary w-100">
+        <i class="bi bi-chat-heart me-2"></i>Talk to AI
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{{ url_for('assessment') }}" class="btn btn-warning w-100">
+        <i class="bi bi-clipboard2-pulse me-2"></i>Take Assessment
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{{ url_for('history') }}" class="btn btn-outline-info w-100">
+        <i class="bi bi-graph-up me-2"></i>View History
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

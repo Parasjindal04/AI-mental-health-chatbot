@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Tell us about yourself — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:720px;">
+  <div class="text-center mb-5">
+    <h2 class="fw-bold">Welcome to MindEase 👋</h2>
+    <p class="text-secondary">Help us personalize your experience. Takes just 2 minutes.</p>
+    <div class="progress mb-2" style="height:6px;">
+      <div class="progress-bar bg-primary" id="formProgress" style="width:0%;"></div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('onboarding') }}" id="onboardingForm">
+
+    <!-- STEP 1: BASIC INFO -->
+    <div class="form-step active" id="step1">
+      <div class="card border-0 bg-card p-4 mb-3">
+        <h5 class="fw-bold mb-4"><i class="bi bi-person-circle text-primary me-2"></i>Basic Information</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label text-secondary small">Age</label>
+            <input type="number" name="age" class="form-control bg-dark border-secondary text-white"
+              placeholder="21" min="10" max="100" required/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-secondary small">Gender</label>
+            <select name="gender" class="form-select bg-dark border-secondary text-white" required>
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-secondary small">Occupation</label>
+            <input type="text" name="occupation" class="form-control bg-dark border-secondary text-white"
+              placeholder="MCA Student" required/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-secondary small">Average sleep per night (hours)</label>
+            <input type="number" name="sleep_hours" step="0.5" min="2" max="12"
+              class="form-control bg-dark border-secondary text-white" placeholder="7" required/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-secondary small">Exercise frequency</label>
+            <select name="exercise_frequency" class="form-select bg-dark border-secondary text-white">
+              <option value="never">Never</option>
+              <option value="rarely">Rarely</option>
+              <option value="1-2 times/week">1-2 times/week</option>
+              <option value="3-4 times/week">3-4 times/week</option>
+              <option value="daily">Daily</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label text-secondary small">Social preference</label>
+            <div class="d-flex gap-3 flex-wrap">
+              {% for opt in ['Introvert', 'Extrovert', 'Ambivert'] %}
+              <label class="option-label px-4 py-2 rounded-3 cursor-pointer">
+                <input type="radio" name="social_preference" value="{{ opt }}" class="d-none option-radio"
+                  onchange="this.closest('.option-label').classList.add('selected');
+                  document.querySelectorAll('[name=social_preference]').forEach(r => {
+                    if(r !== this) r.closest('.option-label').classList.remove('selected');
+                  })">
+                {{ opt }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary w-100" onclick="nextStep(1)">Next →</button>
+    </div>
+
+    <!-- STEP 2: STRESS & HOBBIES -->
+    <div class="form-step d-none" id="step2">
+      <div class="card border-0 bg-card p-4 mb-3">
+        <h5 class="fw-bold mb-4"><i class="bi bi-emoji-smile text-success me-2"></i>Your Likes & Stress</h5>
+
+        <label class="form-label text-secondary small mb-2">What are your hobbies / things you enjoy?</label>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% for h in ['Music', 'Reading', 'Gaming', 'Cooking', 'Art', 'Sports', 'Movies', 'Travel', 'Coding', 'Yoga', 'Dancing', 'Photography'] %}
+          <label class="chip-label">
+            <input type="checkbox" name="hobbies" value="{{ h }}" class="d-none">
+            <span>{{ h }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <label class="form-label text-secondary small mb-2">What are your stress triggers?</label>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% for t in ['Exams', 'Deadlines', 'Social situations', 'Family issues', 'Finance', 'Health', 'Relationships', 'Work pressure', 'Loneliness', 'Future uncertainty'] %}
+          <label class="chip-label">
+            <input type="checkbox" name="stress_triggers" value="{{ t }}" class="d-none">
+            <span>{{ t }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <label class="form-label text-secondary small mb-2">Things you dislike or find unhelpful</label>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          {% for d in ['Crowded places', 'Loud noise', 'Unsolicited advice', 'Being ignored', 'Uncertainty', 'Criticism', 'Interruptions'] %}
+          <label class="chip-label">
+            <input type="checkbox" name="dislikes" value="{{ d }}" class="d-none">
+            <span>{{ d }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary w-50" onclick="prevStep(2)">← Back</button>
+        <button type="button" class="btn btn-primary w-50" onclick="nextStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: COPING & GOALS -->
+    <div class="form-step d-none" id="step3">
+      <div class="card border-0 bg-card p-4 mb-3">
+        <h5 class="fw-bold mb-4"><i class="bi bi-bullseye text-warning me-2"></i>Coping & Goals</h5>
+
+        <label class="form-label text-secondary small mb-2">How do you usually cope with stress?</label>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% for c in ['Deep breathing', 'Talking to someone', 'Exercise', 'Journaling', 'Meditation', 'Listening to music', 'Sleeping', 'Eating', 'Avoiding the problem', 'Watching TV'] %}
+          <label class="chip-label">
+            <input type="checkbox" name="coping_methods" value="{{ c }}" class="d-none">
+            <span>{{ c }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <label class="form-label text-secondary small mb-2">Preferred support style</label>
+        <select name="preferred_coping_style" class="form-select bg-dark border-secondary text-white mb-4">
+          <option value="breathing">Breathing & Relaxation</option>
+          <option value="journaling">Journaling & Reflection</option>
+          <option value="exercise">Physical Activity</option>
+          <option value="talking">Talking & Expressing</option>
+          <option value="mixed">Mix of everything</option>
+        </select>
+
+        <label class="form-label text-secondary small mb-2">What are your wellness goals?</label>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          {% for g in ['Reduce anxiety', 'Sleep better', 'Manage stress', 'Build confidence', 'Improve focus', 'Feel happier', 'Process emotions', 'Build healthy habits'] %}
+          <label class="chip-label">
+            <input type="checkbox" name="goals" value="{{ g }}" class="d-none">
+            <span>{{ g }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary w-50" onclick="prevStep(3)">← Back</button>
+        <button type="button" class="btn btn-primary w-50" onclick="nextStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: HEALTH BACKGROUND -->
+    <div class="form-step d-none" id="step4">
+      <div class="card border-0 bg-card p-4 mb-3">
+        <h5 class="fw-bold mb-4"><i class="bi bi-heart-pulse text-danger me-2"></i>Health Background</h5>
+        <p class="text-secondary small mb-4">This helps us give safer, more relevant suggestions. All information is private.</p>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small">Any existing conditions? (optional)</label>
+          <input type="text" name="existing_conditions"
+            class="form-control bg-dark border-secondary text-white"
+            placeholder="e.g. anxiety disorder, insomnia (leave blank if none)"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small">Current medications? (optional)</label>
+          <input type="text" name="current_medications"
+            class="form-control bg-dark border-secondary text-white"
+            placeholder="e.g. none, or medication name"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small">Have you attended therapy or counselling before?</label>
+          <div class="d-flex gap-3 mt-2">
+            <label class="option-label px-4 py-2 rounded-3 cursor-pointer">
+              <input type="radio" name="previous_therapy" value="yes" class="d-none option-radio"
+                onchange="this.closest('.option-label').classList.add('selected');
+                document.querySelectorAll('[name=previous_therapy]').forEach(r => {
+                  if(r !== this) r.closest('.option-label').classList.remove('selected');
+                })"> Yes
+            </label>
+            <label class="option-label px-4 py-2 rounded-3 cursor-pointer">
+              <input type="radio" name="previous_therapy" value="no" class="d-none option-radio"
+                onchange="this.closest('.option-label').classList.add('selected');
+                document.querySelectorAll('[name=previous_therapy]').forEach(r => {
+                  if(r !== this) r.closest('.option-label').classList.remove('selected');
+                })"> No
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary w-50" onclick="prevStep(4)">← Back</button>
+        <button type="submit" class="btn btn-success w-50">
+          <i class="bi bi-check2-circle me-2"></i>Complete Setup
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+function nextStep(from) {
+  document.getElementById('step' + from).classList.add('d-none');
+  document.getElementById('step' + (from + 1)).classList.remove('d-none');
+  currentStep = from + 1;
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function prevStep(from) {
+  document.getElementById('step' + from).classList.add('d-none');
+  document.getElementById('step' + (from - 1)).classList.remove('d-none');
+  currentStep = from - 1;
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function updateProgress() {
+  const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+  document.getElementById('formProgress').style.width = pct + '%';
+}
+
+// Chip toggle
+// Chip toggle
+document.querySelectorAll('.chip-label').forEach(label => {
+  label.addEventListener('click', (e) => {
+    const checkbox = label.querySelector('input[type="checkbox"]');
+    if (e.target !== checkbox) {
+      checkbox.checked = !checkbox.checked;
+    }
+    label.classList.toggle('selected', checkbox.checked);
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Assessment — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px;">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-clipboard2-pulse text-warning me-2"></i>PHQ-9 Assessment</h2>
+    <p class="text-secondary">
+      The Patient Health Questionnaire (PHQ-9) is a clinically validated tool for screening depression.
+      Over the <strong>last 2 weeks</strong>, how often have you been bothered by the following?
+    </p>
+    <div class="alert alert-info border-0 bg-info bg-opacity-10">
+      <i class="bi bi-info-circle me-2"></i>
+      This is a screening tool only, not a diagnosis. Always consult a mental health professional.
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('assessment') }}">
+    {% for question in questions %}
+    {% set i = loop.index0 %}
+    <div class="card border-0 bg-card p-4 mb-3 question-card" id="qcard-{{ i }}">
+      <div class="d-flex align-items-start gap-3">
+        <div class="question-number">{{ i + 1 }}</div>
+        <div class="w-100">
+          <p class="fw-medium mb-3">{{ question }}</p>
+          <div class="row g-2">
+            {% for val, label in [(0,'Not at all'), (1,'Several days'), (2,'More than half'), (3,'Nearly every day')] %}
+            <div class="col-6 col-md-3">
+              <label class="option-label w-100 text-center p-2 rounded-3 cursor-pointer">
+                <input type="radio" name="q{{ i }}" value="{{ val }}" required class="d-none option-radio"
+                  onchange="updateProgress()">
+                <div class="option-val fw-bold">{{ val }}</div>
+                <div class="option-text">{{ label }}</div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- PROGRESS -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between mb-1">
+        <small class="text-secondary">Progress</small>
+        <small class="text-secondary" id="progressText">0/9 answered</small>
+      </div>
+      <div class="progress bg-dark" style="height:6px;">
+        <div class="progress-bar bg-primary" id="progressBar" style="width:0%;"></div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-warning btn-lg w-100" id="submitBtn" disabled>
+      <i class="bi bi-stars me-2"></i>Get My Results
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Jinja enumerate workaround
+</script>
+<script>
+let answered = 0;
+
+function updateProgress() {
+  const total = 9;
+  answered = document.querySelectorAll('input[type=radio]:checked').length;
+  const pct = (answered / total) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${answered}/${total} answered`;
+  document.getElementById('submitBtn').disabled = answered < total;
+
+  // highlight selected options
+  document.querySelectorAll('.option-label').forEach(label => {
+    label.classList.remove('selected');
+    const radio = label.querySelector('.option-radio');
+    if (radio.checked) label.classList.add('selected');
+  });
+}
+</script>
+{% endblock %}

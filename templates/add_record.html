@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Add Health Record — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:640px;">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-plus-circle text-primary me-2"></i>Add Health Record</h2>
+    <p class="text-secondary">Log a therapy session, medical visit, or test result.</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('add_record') }}">
+    <div class="card border-0 bg-card p-4 mb-3">
+
+      <div class="mb-3">
+        <label class="form-label text-secondary small">Record Type</label>
+        <select name="record_type" class="form-select bg-dark border-secondary text-white" required>
+          <option value="">Select type</option>
+          <option value="counselling">Counselling Session</option>
+          <option value="therapy">Therapy Session</option>
+          <option value="blood_test">Blood Test</option>
+          <option value="medication">Medication</option>
+          <option value="hospital">Hospital Visit</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary small">Title</label>
+        <input type="text" name="title" class="form-control bg-dark border-secondary text-white"
+          placeholder="e.g. Weekly CBT session with Dr. Sharma" required/>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Doctor / Therapist Name</label>
+          <input type="text" name="doctor_name" class="form-control bg-dark border-secondary text-white"
+            placeholder="Dr. Name (optional)"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Clinic / Hospital</label>
+          <input type="text" name="clinic_hospital" class="form-control bg-dark border-secondary text-white"
+            placeholder="Hospital name (optional)"/>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Date of Visit</label>
+          <input type="date" name="date_of_visit" class="form-control bg-dark border-secondary text-white"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-secondary small">Next Appointment (optional)</label>
+          <input type="date" name="next_appointment" class="form-control bg-dark border-secondary text-white"/>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary small">Description / Summary</label>
+        <textarea name="description" class="form-control bg-dark border-secondary text-white" rows="3"
+          placeholder="What was discussed? Any diagnosis or advice?"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary small">Personal Notes</label>
+        <textarea name="file_note" class="form-control bg-dark border-secondary text-white" rows="3"
+          placeholder="Your personal notes about this visit..."></textarea>
+      </div>
+
+    </div>
+
+    <div class="d-flex gap-3">
+      <a href="{{ url_for('records') }}" class="btn btn-outline-secondary w-50">Cancel</a>
+      <button type="submit" class="btn btn-primary w-50">
+        <i class="bi bi-save me-2"></i>Save Record
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

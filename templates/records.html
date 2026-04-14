@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Health Records — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold"><i class="bi bi-folder2-open text-info me-2"></i>Health Records</h2>
+      <p class="text-secondary mb-0">Track your therapy sessions, blood tests, and medical history</p>
+    </div>
+    <a href="{{ url_for('add_record') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-2"></i>Add Record
+    </a>
+  </div>
+
+  {% if records %}
+  <!-- FILTER TABS -->
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    <button class="btn btn-sm btn-outline-secondary active filter-btn" onclick="filterRecords('all', this)">All</button>
+    {% for t in ['counselling', 'therapy', 'blood_test', 'medication', 'hospital'] %}
+    <button class="btn btn-sm btn-outline-secondary filter-btn"
+      onclick="filterRecords('{{ t }}', this)">
+      {{ t.replace('_', ' ') | title }}
+    </button>
+    {% endfor %}
+  </div>
+
+  <div class="row g-3" id="recordsList">
+    {% for r in records %}
+    <div class="col-md-6 record-item" data-type="{{ r.record_type }}">
+      <div class="card border-0 bg-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="record-type-badge type-{{ r.record_type }}">
+            {{ r.record_type.replace('_', ' ') | title }}
+          </span>
+          <a href="{{ url_for('delete_record', id=r.id) }}"
+            class="btn btn-sm btn-outline-danger"
+            onclick="return confirm('Delete this record?')">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+        <h6 class="fw-bold mb-1">{{ r.title }}</h6>
+        {% if r.doctor_name %}
+        <small class="text-secondary"><i class="bi bi-person-badge me-1"></i>{{ r.doctor_name }}</small><br>
+        {% endif %}
+        {% if r.clinic_hospital %}
+        <small class="text-secondary"><i class="bi bi-hospital me-1"></i>{{ r.clinic_hospital }}</small><br>
+        {% endif %}
+        {% if r.date_of_visit %}
+        <small class="text-secondary"><i class="bi bi-calendar me-1"></i>{{ r.date_of_visit.strftime('%b %d, %Y') }}</small>
+        {% endif %}
+        {% if r.next_appointment %}
+        <div class="mt-2">
+          <span class="badge bg-warning text-dark">
+            <i class="bi bi-alarm me-1"></i>Next: {{ r.next_appointment.strftime('%b %d, %Y') }}
+          </span>
+        </div>
+        {% endif %}
+        {% if r.description %}
+        <p class="text-secondary small mt-2 mb-0">{{ r.description[:120] }}{% if r.description|length > 120 %}...{% endif %}</p>
+        {% endif %}
+        {% if r.file_note %}
+        <div class="mt-2 p-2 rounded-2 bg-dark border border-secondary">
+          <small class="text-secondary"><i class="bi bi-sticky me-1"></i>Note: {{ r.file_note[:100] }}</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="text-center py-5 text-secondary">
+    <i class="bi bi-folder2 fs-1 d-block mb-3"></i>
+    <h5>No health records yet</h5>
+    <p>Start tracking your therapy sessions, blood tests, and medical visits.</p>
+    <a href="{{ url_for('add_record') }}" class="btn btn-primary mt-2">
+      <i class="bi bi-plus me-2"></i>Add First Record
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterRecords(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.record-item').forEach(item => {
+    item.style.display = (type === 'all' || item.dataset.type === type) ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

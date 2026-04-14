@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Journal — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-journal-text text-success me-2"></i>My Journal</h2>
+    <p class="text-secondary">Write freely. AI will detect your emotions and provide insights.</p>
+  </div>
+
+  <!-- WRITE ENTRY -->
+  <div class="card border-0 bg-card p-4 mb-4">
+    <h5 class="fw-bold mb-3">New Entry</h5>
+    <textarea class="form-control bg-dark border-secondary text-white mb-3" id="journalContent"
+      placeholder="How are you feeling? What's on your mind today? Write freely..." rows="6"></textarea>
+    <button class="btn btn-success" onclick="submitJournal()" id="submitBtn">
+      <i class="bi bi-stars me-2"></i>Save & Analyze
+    </button>
+
+    <!-- EMOTION RESULT -->
+    <div id="emotionResult" class="d-none mt-4">
+      <div class="alert border-0" id="emotionAlert">
+        <div class="d-flex align-items-center gap-3">
+          <div class="emotion-icon" id="emotionIcon"></div>
+          <div>
+            <div class="fw-bold" id="emotionLabel"></div>
+            <div class="text-secondary" id="emotionInsight"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRISIS RESULT -->
+    <div id="crisisResult" class="d-none mt-2">
+      <div class="alert alert-danger border-0">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>We noticed you may be going through something difficult.</strong><br>
+        Please reach out: <strong>iCall: 9152987821 | AASRA: 9820466627</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAST ENTRIES -->
+  <h5 class="fw-bold mb-3">Past Entries</h5>
+  {% if journals %}
+    {% for entry in journals %}
+    <div class="card border-0 bg-card p-4 mb-3">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <small class="text-secondary">{{ entry.created_at.strftime('%B %d, %Y — %I:%M %p') }}</small>
+        {% if entry.detected_emotion %}
+        <span class="badge emotion-badge emotion-{{ entry.detected_emotion }}">
+          {{ entry.detected_emotion | capitalize }}
+        </span>
+        {% endif %}
+      </div>
+      <p class="mb-0 text-white-75">{{ entry.content[:300] }}{% if entry.content|length > 300 %}...{% endif %}</p>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="text-center py-5 text-secondary">
+    <i class="bi bi-journal fs-1 d-block mb-3"></i>
+    No journal entries yet. Write your first one above!
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const emotionEmojis = {
+  happy: '😊', sad: '😔', anxious: '😰', angry: '😤',
+  neutral: '😐', fearful: '😨', hopeful: '🌟', overwhelmed: '😵'
+};
+
+const emotionColors = {
+  happy: 'alert-success', sad: 'alert-info', anxious: 'alert-warning',
+  angry: 'alert-danger', neutral: 'alert-secondary', fearful: 'alert-warning',
+  hopeful: 'alert-success', overwhelmed: 'alert-danger'
+};
+
+async function submitJournal() {
+  const content = document.getElementById('journalContent').value.trim();
+  if (!content) { alert('Please write something first!'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Analyzing...';
+
+  try {
+    const res = await fetch('/journal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const emotion = data.emotion;
+      const result = document.getElementById('emotionResult');
+      const alert = document.getElementById('emotionAlert');
+      const icon = document.getElementById('emotionIcon');
+      const label = document.getElementById('emotionLabel');
+      const insight = document.getElementById('emotionInsight');
+
+      alert.className = `alert border-0 ${emotionColors[emotion.primary_emotion] || 'alert-secondary'}`;
+      icon.textContent = emotionEmojis[emotion.primary_emotion] || '💭';
+      icon.style.fontSize = '2rem';
+      label.textContent = `Detected: ${emotion.primary_emotion.charAt(0).toUpperCase() + emotion.primary_emotion.slice(1)} (${emotion.intensity} intensity)`;
+      insight.textContent = emotion.brief_insight;
+      result.classList.remove('d-none');
+
+      if (data.crisis && (data.crisis.crisis_level === 'high' || data.crisis.crisis_level === 'critical')) {
+        document.getElementById('crisisResult').classList.remove('d-none');
+      }
+
+      document.getElementById('journalContent').value = '';
+      setTimeout(() => location.reload(), 4000);
+    }
+  } catch (e) {
+    alert('Something went wrong. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-stars me-2"></i>Save & Analyze';
+}
+</script>
+{% endblock %}

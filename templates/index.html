@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindEase — AI Mental Health Companion</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+</head>
+<body class="landing-page">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent" id="landingNav">
+  <div class="container">
+    <a class="navbar-brand fw-bold fs-4" href="/">
+      <i class="bi bi-heart-pulse-fill text-primary me-2"></i>MindEase
+    </a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section d-flex align-items-center min-vh-100">
+  <div class="container text-center">
+    <div class="hero-badge mb-4">
+      <span class="badge rounded-pill bg-primary bg-opacity-20 text-primary border border-primary px-4 py-2">
+        <i class="bi bi-stars me-1"></i> AI Powered Mental Wellness
+      </span>
+    </div>
+    <h1 class="display-3 fw-bold mb-4 hero-title">
+      Your mind deserves<br>
+      <span class="text-gradient">a safe space</span>
+    </h1>
+   <p class="lead text-secondary mb-3 mx-auto" style="max-width:600px;">
+  MindEase is your personal AI companion for tracking stress, journaling thoughts,
+  and getting support — privately, 24/7, completely free.
+</p>
+<div class="motivational-hero mx-auto mb-5" style="max-width:580px;">
+  "Your mind deserves care and understanding. Here, you can explore your emotions,
+  manage stress, and gently work through anxiety. Go slowly, be kind to yourself,
+  and remember — you are stronger than your thoughts."
+</div>
+
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5">
+        Start for Free <i class="bi bi-arrow-right ms-2"></i>
+      </a>
+      <a href="#features" class="btn btn-outline-secondary btn-lg px-5">Learn More</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="row justify-content-center mt-5 pt-4 g-4">
+      <div class="col-auto">
+        <div class="stat-pill">
+          <span class="fw-bold text-white">1 in 4</span>
+          <span class="text-secondary ms-2">students face anxiety</span>
+        </div>
+      </div>
+      <div class="col-auto">
+        <div class="stat-pill">
+          <span class="fw-bold text-white">24/7</span>
+          <span class="text-secondary ms-2">available support</span>
+        </div>
+      </div>
+      <div class="col-auto">
+        <div class="stat-pill">
+          <span class="fw-bold text-white">100%</span>
+          <span class="text-secondary ms-2">private & free</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-5 my-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold display-6">Everything you need to feel better</h2>
+      <p class="text-secondary">Built with clinical standards and AI-powered insights</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-chat-heart-fill"></i></div>
+          <h5 class="fw-bold">AI Therapist Chat</h5>
+          <p class="text-secondary">Talk to our empathetic AI companion anytime. Get evidence-based coping strategies in real-time.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-emoji-smile-fill"></i></div>
+          <h5 class="fw-bold">Mood Tracker</h5>
+          <p class="text-secondary">Log your daily mood and visualize patterns over time with beautiful charts.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-journal-richtext"></i></div>
+          <h5 class="fw-bold">Smart Journal</h5>
+          <p class="text-secondary">Write freely. Our AI detects your emotions and provides insights about your mental state.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+          <h5 class="fw-bold">PHQ-9 Assessment</h5>
+          <p class="text-secondary">Take a clinically validated depression screening test and get personalized coping strategies.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-wind"></i></div>
+          <h5 class="fw-bold">Breathing Exercises</h5>
+          <p class="text-secondary">Guided breathing animations to calm your nervous system within minutes.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card h-100">
+          <div class="feature-icon mb-3"><i class="bi bi-graph-up-arrow"></i></div>
+          <h5 class="fw-bold">Weekly Reports</h5>
+          <p class="text-secondary">Get AI-generated weekly wellness summaries with personalized recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5 my-5">
+  <div class="container">
+    <div class="cta-card text-center py-5 px-4 rounded-4">
+      <h2 class="fw-bold display-6 mb-3">Start your wellness journey today</h2>
+      <p class="text-secondary mb-4">Free. Private. No judgment.</p>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5">
+        Create Free Account <i class="bi bi-arrow-right ms-2"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="text-center py-4 text-secondary border-top border-secondary border-opacity-25">
+  <p class="mb-0">© 2024 MindEase · Built for student wellness · Not a replacement for professional therapy</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

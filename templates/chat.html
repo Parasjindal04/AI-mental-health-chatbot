@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}AI Chat — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div class="ai-avatar">
+      <i class="bi bi-robot"></i>
+    </div>
+    <div>
+      <h4 class="fw-bold mb-0">MindEase AI</h4>
+      <small class="text-success"><i class="bi bi-circle-fill me-1" style="font-size:8px;"></i>Online & here for you</small>
+    </div>
+  </div>
+
+  <!-- CRISIS ALERT (hidden by default) -->
+  <div id="crisisAlert" class="alert alert-danger d-none mb-3">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>We're concerned about you.</strong> Please reach out for immediate support:<br>
+    <strong>iCall: 9152987821 | AASRA: 9820466627 | Vandrevala: 1860-2662-345</strong>
+  </div>
+
+  <!-- CHAT WINDOW -->
+  <div class="chat-window card border-0 bg-card p-3 mb-3" id="chatWindow">
+    <!-- Welcome message -->
+    <div class="message assistant-message">
+      <div class="message-bubble assistant-bubble">
+        Hi there 👋 I'm MindEase, your personal mental health companion. I'm here to listen without judgment. 
+        How are you feeling today?
+      </div>
+    </div>
+
+    {% for msg in history %}
+    <div class="message {% if msg.role == 'user' %}user-message{% else %}assistant-message{% endif %}">
+      <div class="message-bubble {% if msg.role == 'user' %}user-bubble{% else %}assistant-bubble{% endif %}">
+        {{ msg.message }}
+      </div>
+      <small class="text-secondary px-2">{{ msg.timestamp.strftime('%I:%M %p') }}</small>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- INPUT -->
+  <div class="chat-input-area d-flex gap-2">
+    <textarea class="form-control bg-dark border-secondary text-white" id="userInput"
+      placeholder="Type how you're feeling..." rows="2"
+      onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+    <button class="btn btn-primary px-4" onclick="sendMessage()" id="sendBtn">
+      <i class="bi bi-send-fill"></i>
+    </button>
+  </div>
+  <small class="text-secondary mt-2 d-block text-center">
+    <i class="bi bi-shield-lock me-1"></i>Conversations are private. MindEase is not a replacement for professional therapy.
+  </small>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chatWindow = document.getElementById('chatWindow');
+chatWindow.scrollTop = chatWindow.scrollHeight;
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const message = input.value.trim();
+  if (!message) return;
+
+  appendMessage(message, 'user');
+  input.value = '';
+
+  const typing = appendTyping();
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const res = await fetch('/chat/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json();
+    typing.remove();
+    appendMessage(data.response, 'assistant');
+
+    if (data.crisis && (data.crisis.crisis_level === 'high' || data.crisis.crisis_level === 'critical')) {
+      document.getElementById('crisisAlert').classList.remove('d-none');
+    }
+  } catch (e) {
+    typing.remove();
+    appendMessage("I'm sorry, something went wrong. Please try again.", 'assistant');
+  }
+
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function appendMessage(text, role) {
+  const div = document.createElement('div');
+  div.className = `message ${role}-message`;
+  div.innerHTML = `<div class="message-bubble ${role}-bubble">${text}</div>`;
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const div = document.createElement('div');
+  div.className = 'message assistant-message';
+  div.innerHTML = `<div class="message-bubble assistant-bubble typing-indicator">
+    <span></span><span></span><span></span>
+  </div>`;
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return div;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Breathing Exercise — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center" style="max-width: 600px;">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-wind text-info me-2"></i>Breathing Exercise</h2>
+    <p class="text-secondary">Box breathing calms your nervous system in minutes. Used by therapists and athletes alike.</p>
+  </div>
+
+  <!-- TECHNIQUE SELECTOR -->
+  <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+    <button class="btn btn-outline-info btn-sm active-technique" onclick="setTechnique('box')" id="btn-box">
+      Box Breathing (4-4-4-4)
+    </button>
+    <button class="btn btn-outline-info btn-sm" onclick="setTechnique('478')" id="btn-478">
+      4-7-8 Breathing
+    </button>
+    <button class="btn btn-outline-info btn-sm" onclick="setTechnique('calm')" id="btn-calm">
+      Calm Breathing (5-5)
+    </button>
+  </div>
+
+  <!-- BREATHING CIRCLE -->
+  <div class="breathing-container mb-4">
+    <div class="breathing-ring" id="breathingRing">
+      <div class="breathing-circle" id="breathingCircle">
+        <div class="breath-text" id="breathText">Ready</div>
+        <div class="breath-count" id="breathCount"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <button class="btn btn-info btn-lg px-5 text-white" id="startBtn" onclick="startBreathing()">
+      <i class="bi bi-play-fill me-2"></i>Start
+    </button>
+    <button class="btn btn-outline-secondary btn-lg px-4 d-none" id="stopBtn" onclick="stopBreathing()">
+      <i class="bi bi-stop-fill me-2"></i>Stop
+    </button>
+  </div>
+
+  <!-- SESSION INFO -->
+  <div class="card border-0 bg-card p-4">
+    <div class="row text-center g-3">
+      <div class="col-4">
+        <div class="fw-bold text-info fs-4" id="cycleCount">0</div>
+        <small class="text-secondary">Cycles</small>
+      </div>
+      <div class="col-4">
+        <div class="fw-bold text-success fs-4" id="sessionTime">0s</div>
+        <small class="text-secondary">Time</small>
+      </div>
+      <div class="col-4">
+        <div class="fw-bold text-warning fs-4" id="phaseDisplay">—</div>
+        <small class="text-secondary">Phase</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTIONS -->
+  <div class="mt-4 text-secondary small">
+    <p><i class="bi bi-lightbulb me-1"></i>Find a comfortable position, close your eyes, and follow the animation. 
+    Even 2-3 cycles can reduce anxiety significantly.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/breathing.js') }}"></script>
+{% endblock %}

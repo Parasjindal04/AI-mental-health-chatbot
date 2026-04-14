@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Your Results — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
+  <div class="text-center mb-5">
+    <h2 class="fw-bold">Your Assessment Results</h2>
+    <p class="text-secondary">Based on your PHQ-9 responses</p>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div class="card border-0 p-5 text-center mb-4 score-card severity-{{ severity.lower().replace(' ', '-') }}">
+    <div class="score-circle mx-auto mb-3">
+      <span class="score-number">{{ score }}</span>
+      <span class="score-max">/27</span>
+    </div>
+    <h3 class="fw-bold mb-2">{{ severity }}</h3>
+    <p class="text-secondary mb-0">
+      {% if severity == 'Minimal' %}
+        You're doing well. Keep maintaining your healthy habits.
+      {% elif severity == 'Mild' %}
+        You may benefit from self-care strategies and monitoring your mood.
+      {% elif severity == 'Moderate' %}
+        Consider speaking with a counselor or mental health professional.
+      {% elif severity == 'Moderately Severe' %}
+        Professional support is strongly recommended. Please reach out.
+      {% else %}
+        Please seek immediate professional help. You don't have to face this alone.
+      {% endif %}
+    </p>
+
+    {% if severity in ['Moderately Severe', 'Severe'] %}
+    <div class="alert alert-danger mt-3 border-0">
+      <i class="bi bi-telephone-fill me-2"></i>
+      <strong>Crisis helplines:</strong> iCall: 9152987821 | AASRA: 9820466627
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- COPING STRATEGIES -->
+  {% if strategies and strategies.strategies %}
+  <div class="mb-4">
+    <h4 class="fw-bold mb-1">Personalized Coping Strategies</h4>
+    <p class="text-secondary mb-3">{{ strategies.message }}</p>
+
+    <div class="row g-3">
+      {% for s in strategies.strategies %}
+      <div class="col-md-6">
+        <div class="card border-0 bg-card h-100 p-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="strategy-type-badge type-{{ s.type }}">{{ s.type | capitalize }}</span>
+            <span class="text-secondary small"><i class="bi bi-clock me-1"></i>{{ s.duration }}</span>
+          </div>
+          <h6 class="fw-bold mb-2">{{ s.title }}</h6>
+          <p class="text-secondary small mb-0">{{ s.description }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ACTIONS -->
+  <div class="row g-3">
+    <div class="col-md-4">
+      <a href="{{ url_for('chat') }}" class="btn btn-primary w-100">
+        <i class="bi bi-chat-heart me-2"></i>Talk to AI
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{{ url_for('breathing') }}" class="btn btn-info w-100 text-white">
+        <i class="bi bi-wind me-2"></i>Breathing Exercise
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{{ url_for('assessment') }}" class="btn btn-outline-secondary w-100">
+        <i class="bi bi-arrow-repeat me-2"></i>Retake Assessment
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

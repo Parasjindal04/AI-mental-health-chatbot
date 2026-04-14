@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Mood History — MindEase{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-graph-up text-info me-2"></i>Mood History</h2>
+    <p class="text-secondary">Your mood trends over the past 30 days</p>
+  </div>
+
+  {% if moods %}
+  <!-- CHART -->
+  <div class="card border-0 bg-card p-4 mb-4">
+    <h5 class="fw-bold mb-3">Mood Trend</h5>
+    <div style="position:relative; height:300px;">
+      <canvas id="moodChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ENTRIES TABLE -->
+  <div class="card border-0 bg-card p-4">
+    <h5 class="fw-bold mb-3">All Entries</h5>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Mood</th>
+            <th>Score</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mood in moods | reverse %}
+          <tr>
+            <td class="text-secondary">{{ mood.date.strftime('%b %d, %Y') }}</td>
+            <td>{{ mood.mood_label }}</td>
+            <td>
+              <div class="progress bg-dark" style="width:100px; height:6px;">
+                <div class="progress-bar bg-primary" style="width:{{ mood.mood_score * 10 }}%;"></div>
+              </div>
+              <small>{{ mood.mood_score }}/10</small>
+            </td>
+            <td class="text-secondary">{{ mood.note or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-5 text-secondary">
+    <i class="bi bi-graph-up fs-1 d-block mb-3"></i>
+    No mood entries yet. Start logging from your dashboard!
+    <br>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Go to Dashboard</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if moods %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const chartData = {{ chart_data | tojson }};
+
+new Chart(document.getElementById('moodChart'), {
+  type: 'line',
+  data: {
+    labels: chartData.labels,
+    datasets: [{
+      label: 'Mood Score',
+      data: chartData.scores,
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99,102,241,0.1)',
+      borderWidth: 2,
+      pointBackgroundColor: '#6366f1',
+      pointRadius: 5,
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        min: 0, max: 10,
+        ticks: { color: '#9ca3af', stepSize: 2 },
+        grid: { color: 'rgba(255,255,255,0.05)' }
+      },
+      x: {
+        ticks: { color: '#9ca3af' },
+        grid: { color: 'rgba(255,255,255,0.05)' }
+      }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}
