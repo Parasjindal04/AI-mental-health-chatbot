@@ -35,8 +35,8 @@
       <h5 class="fw-bold mb-3">What was most helpful?</h5>
       <div class="d-flex flex-wrap gap-2">
         {% for f in ['AI Chat', 'Mood Tracker', 'Journal', 'Assessment', 'Breathing Exercise', 'Weekly Report', 'Coping Strategies', 'Crisis Support'] %}
-        <label class="chip-label">
-          <input type="checkbox" name="helpful_features" value="{{ f }}" class="d-none">
+        <label class="chip-label" onclick="return false;">
+          <input type="checkbox" name="helpful_features" value="{{ f }}" class="d-none helpful-checkbox">
           <span>{{ f }}</span>
         </label>
         {% endfor %}
@@ -106,7 +106,16 @@ document.querySelectorAll('.star').forEach(star => {
 });
 
 document.querySelectorAll('.chip-label').forEach(label => {
-  label.addEventListener('click', () => label.classList.toggle('selected'));
+  const checkbox = label.querySelector('input[type="checkbox"]');
+  label.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    checkbox.checked = !checkbox.checked;
+    label.classList.toggle('selected', checkbox.checked);
+  });
+
+  // Initialize visual state based on checkbox state
+  label.classList.toggle('selected', checkbox.checked);
 });
 </script>
 {% endblock %}

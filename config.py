@@ -1,9 +1,11 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env file from the same directory as this config.py file
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY","fallback_secret")

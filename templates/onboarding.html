@@ -36,7 +36,7 @@
           <div class="col-md-4">
             <label class="form-label text-secondary small">Occupation</label>
             <input type="text" name="occupation" class="form-control bg-dark border-secondary text-white"
-              placeholder="MCA Student" required/>
+              placeholder="Student" required/>
           </div>
           <div class="col-md-6">
             <label class="form-label text-secondary small">Average sleep per night (hours)</label>
@@ -58,7 +58,7 @@
             <div class="d-flex gap-3 flex-wrap">
               {% for opt in ['Introvert', 'Extrovert', 'Ambivert'] %}
               <label class="option-label px-4 py-2 rounded-3 cursor-pointer">
-                <input type="radio" name="social_preference" value="{{ opt }}" class="d-none option-radio"
+                <input type="radio" name="social_preference" value="{{ opt }}" class="d-none option-radio" required
                   onchange="this.closest('.option-label').classList.add('selected');
                   document.querySelectorAll('[name=social_preference]').forEach(r => {
                     if(r !== this) r.closest('.option-label').classList.remove('selected');
@@ -230,15 +230,66 @@ function updateProgress() {
   document.getElementById('formProgress').style.width = pct + '%';
 }
 
-// Chip toggle
-// Chip toggle
-document.querySelectorAll('.chip-label').forEach(label => {
-  label.addEventListener('click', (e) => {
-    const checkbox = label.querySelector('input[type="checkbox"]');
-    if (e.target !== checkbox) {
-      checkbox.checked = !checkbox.checked;
+// Validation function
+function validateRequired() {
+  const requiredFields = document.getElementById('onboardingForm').querySelectorAll('[required]');
+  let isValid = true;
+
+  for (let field of requiredFields) {
+    if (field.type === 'radio') {
+      const groupName = field.name;
+      const isChecked = document.querySelector(`input[name="${groupName}"]:checked`);
+      if (!isChecked) {
+        isValid = false;
+        break;
+      }
+    } else if (field.type === 'checkbox') {
+      continue; // Skip checkboxes as they're optional groups
+    } else if (!field.value.trim()) {
+      isValid = false;
+      break;
     }
-    label.classList.toggle('selected', checkbox.checked);
+  }
+
+  return isValid;
+}
+
+// Handle form submission
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('onboardingForm');
+
+  form.addEventListener('submit', (e) => {
+    // Check if all required fields are filled
+    if (!form.checkValidity() || !validateRequired()) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('Please fill in all required fields on all steps before completing setup.');
+      return false;
+    }
+  });
+
+  // Chip toggle
+  document.querySelectorAll('.chip-label').forEach(label => {
+    const checkbox = label.querySelector('input[type="checkbox"]');
+
+    // Set initial state
+    if (checkbox.checked) {
+      label.classList.add('selected');
+    }
+
+    // Add click handler
+    label.addEventListener('click', (e) => {
+      if (e.target !== checkbox) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+      }
+      label.classList.toggle('selected', checkbox.checked);
+    });
+
+    // Also handle direct checkbox change
+    checkbox.addEventListener('change', () => {
+      label.classList.toggle('selected', checkbox.checked);
+    });
   });
 });
 </script>

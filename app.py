@@ -10,31 +10,90 @@ from config import Config
 from datetime import datetime, timedelta
 import bcrypt
 import json
+import os
+import shutil
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+
+@app.context_processor
+def inject_asset_url():
+    def asset_url(filename):
+        file_path = os.path.join(app.static_folder, filename)
+        try:
+            version = int(os.path.getmtime(file_path))
+        except OSError:
+            version = int(datetime.utcnow().timestamp())
+        return url_for("static", filename=filename, v=version)
+
+    def brand_logo_url():
+        # If a new logo is uploaded to app-root/images, mirror it into static/images.
+        project_logo = os.path.join(app.root_path, "images", "logo.png")
+        static_logo = os.path.join(app.static_folder, "images", "logo.png")
+        try:
+            if os.path.exists(project_logo):
+                if (not os.path.exists(static_logo)) or (os.path.getmtime(project_logo) > os.path.getmtime(static_logo)):
+                    os.makedirs(os.path.dirname(static_logo), exist_ok=True)
+                    shutil.copy2(project_logo, static_logo)
+        except OSError:
+            pass
+
+        candidates = ["images/logo-solid.png", "images/logo.png"]
+        best_file = None
+        best_mtime = -1
+        for candidate in candidates:
+            candidate_path = os.path.join(app.static_folder, candidate)
+            try:
+                mtime = os.path.getmtime(candidate_path)
+            except OSError:
+                continue
+            if mtime > best_mtime:
+                best_file = candidate
+                best_mtime = mtime
+
+        if best_file is None:
+            best_file = "images/logo-solid.png"
+
+        return asset_url(best_file)
+
+    return {"asset_url": asset_url, "brand_logo_url": brand_logo_url}
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+
+# Rate limiting for chat API (request timestamps per user)
+user_chat_requests = {}
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-PHQ9_QUESTIONS = [
-    "Little interest or pleasure in doing things",
-    "Feeling down, depressed, or hopeless",
-    "Trouble falling or staying asleep, or sleeping too much",
-    "Feeling tired or having little energy",
-    "Poor appetite or overeating",
-    "Feeling bad about yourself or that you are a failure",
-    "Trouble concentrating on things such as reading or watching television",
-    "Moving or speaking so slowly that other people could have noticed",
-    "Thoughts that you would be better off dead or of hurting yourself"
-]
+# PHQ9_QUESTIONS = [
+#     "Little interest or pleasure in doing things",
+#     "Feeling down, depressed, or hopeless",
+#     "Trouble falling or staying asleep, or sleeping too much",
+#     "Feeling tired or having little energy",
+#     "Poor appetite or overeating",
+#     "Feeling bad about yourself or that you are a failure",
+#     "Trouble concentrating on things such as reading or watching television",
+#     "Moving or speaking so slowly that other people could have noticed",
+#     "Thoughts that you would be better off dead or of hurting yourself"
+# ]
 
+PHQ9_QUESTIONS = [
+    "How did you feel when you started your day today?",
+    "Did you enjoy the things you did today or did they feel like a burden?",
+    "How calm and stress-free did you feel during the day?",
+    "Did you feel motivated to complete your tasks or avoid them?",
+    "How confident and comfortable did you feel about yourself today?",
+    "Did you feel connected to people around you or isolated?",
+    "How well were you able to concentrate on your work or studies?",
+    "Did you feel mentally tired or overwhelmed at any point?",
+    "How positive or negative were your thoughts about yourself today?"
+]
 MOOD_LABELS = {
     1: "Terrible", 2: "Very Sad", 3: "Sad", 4: "Low",
     5: "Neutral", 6: "Okay", 7: "Good", 8: "Great",
@@ -177,6 +236,27 @@ def chat():
 @app.route("/chat/send", methods=["POST"])
 @login_required
 def send_message():
+    global user_chat_requests
+
+    # Rate limiting: 1 message per 2 seconds per user (to avoid API rate limits)
+    user_id = current_user.id
+    now = datetime.utcnow()
+
+    if user_id in user_chat_requests:
+        last_request = user_chat_requests[user_id]
+        time_since_last = (now - last_request).total_seconds()
+        if time_since_last < 2:
+            return jsonify({
+                "error": "Please wait a moment between messages",
+                "retry_after": round(2 - time_since_last, 1)
+            }), 429
+
+    user_chat_requests[user_id] = now
+
+    # Clean up old entries (older than 5 minutes)
+    user_chat_requests = {uid: ts for uid, ts in user_chat_requests.items()
+                          if (now - ts).total_seconds() < 300}
+
     user_message = request.json.get("message", "").strip()
     if not user_message:
         return jsonify({"error": "Empty message"}), 400

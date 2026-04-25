@@ -1,9 +1,20 @@
-import google.generativeai as genai
+from mistralai.client import Mistral
 import json
-from config import GEMINI_API_KEY
+import os
+import sys
+import time
+from config import MISTRAL_API_KEY
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-pro")
+if not MISTRAL_API_KEY:
+    print("ERROR: MISTRAL_API_KEY not found in environment variables!", file=sys.stderr)
+    print("Please create a .env file with MISTRAL_API_KEY set to your Mistral API key", file=sys.stderr)
+    client = None
+else:
+    try:
+        client = Mistral(api_key=MISTRAL_API_KEY)
+    except Exception as e:
+        print(f"ERROR configuring Mistral API: {e}", file=sys.stderr)
+        client = None
 
 THERAPIST_PROMPT = """
 You are MindEase, a warm and supportive AI mental health companion.
@@ -25,6 +36,9 @@ You are NOT a replacement for professional therapy. Mention this only once per c
 """
 
 def get_ai_response(conversation_history, user_message, user_profile=None):
+    if client is None:
+        return "⚠️ I'm temporarily unavailable due to a configuration issue. Please check that your MISTRAL_API_KEY environment variable is properly set in the .env file."
+
     profile_context = ""
 
     if user_profile:
@@ -47,20 +61,59 @@ User's personal profile (use this to personalize your response):
 
 Always reference their hobbies and coping preferences when suggesting activities.
 """
-        except Exception:
+        except Exception as e:
+            print(f"Warning: Could not parse user profile: {e}", file=sys.stderr)
             profile_context = ""
 
-    full_prompt = THERAPIST_PROMPT + "\n" + profile_context + "\n\nConversation history:\n"
+    # Build messages for Mistral API
+    messages = [
+        {"role": "system", "content": THERAPIST_PROMPT + "\n" + profile_context}
+    ]
 
+    # Add conversation history
     for msg in conversation_history[-8:]:
-        role = "User" if msg["role"] == "user" else "MindEase"
-        full_prompt += f"{role}: {msg['message']}\n"
+        messages.append({
+            "role": msg["role"],
+            "content": msg["message"]
+        })
 
-    full_prompt += f"\nUser: {user_message}\nMindEase:"
+    # Add current user message
+    messages.append({"role": "user", "content": user_message})
 
-    try:
-        chat = model.start_chat(history=[])
-        response = chat.send_message(full_prompt)
-        return response.text.strip()
-    except Exception as e:
-        return "I'm really glad you reached out. It sounds like you have a lot on your mind — that's completely okay. Sometimes just putting feelings into words is the first step. What would feel most helpful to talk about right now?"
+    # Retry logic with exponential backoff
+    max_retries = 3
+    retry_delay = 1  # Start with 1 second
+
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.complete(
+                model="mistral-large-latest",
+                messages=messages
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            error_msg = str(e)
+            print(f"ERROR in AI response (attempt {attempt + 1}/{max_retries}): {error_msg}", file=sys.stderr)
+
+            # Check for rate limit errors
+            if "quota" in error_msg.lower() or "rate_limit" in error_msg.lower() or "too many requests" in error_msg.lower() or "429" in error_msg:
+                if attempt < max_retries - 1:
+                    # Wait with exponential backoff before retrying
+                    wait_time = retry_delay * (2 ** attempt)
+                    print(f"Rate limit hit. Waiting {wait_time}s before retry...", file=sys.stderr)
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    return "⏳ I'm receiving too many requests right now. Please wait a moment and try again. Our team is working on improving capacity!"
+
+            # Check for authentication errors
+            elif "API_KEY" in error_msg or "authentication" in error_msg.lower() or "invalid_api_key" in error_msg.lower():
+                return "⚠️ API authentication failed. Please verify your MISTRAL_API_KEY is correct in the .env file."
+
+            # For other errors, retry once more (except on last attempt)
+            elif attempt < max_retries - 1:
+                wait_time = retry_delay * (2 ** attempt)
+                print(f"Retrying in {wait_time}s...", file=sys.stderr)
+                time.sleep(wait_time)
+            else:
+                return f"⚠️ I encountered an error: {error_msg}. Please try again later."

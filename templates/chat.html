@@ -25,7 +25,7 @@
     <!-- Welcome message -->
     <div class="message assistant-message">
       <div class="message-bubble assistant-bubble">
-        Hi there 👋 I'm MindEase, your personal mental health companion. I'm here to listen without judgment. 
+        Hi there 👋 I'm MindEase, your personal mental health companion. I'm here to listen without judgment.
         How are you feeling today?
       </div>
     </div>
@@ -79,6 +79,21 @@ async function sendMessage() {
     });
     const data = await res.json();
     typing.remove();
+
+    if (res.status === 429) {
+      // Rate limit hit
+      const retryAfter = data.retry_after || 2;
+      appendMessage(`⏳ Please wait ${retryAfter} second(s) before sending another message. This helps us serve you better!`, 'assistant');
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+
+    if (!res.ok) {
+      appendMessage(data.error || "I'm sorry, something went wrong. Please try again.", 'assistant');
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+
     appendMessage(data.response, 'assistant');
 
     if (data.crisis && (data.crisis.crisis_level === 'high' || data.crisis.crisis_level === 'critical')) {
