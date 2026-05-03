@@ -8,7 +8,7 @@ with app.app_context():
 
     # Create dummy user
     password = bcrypt.hashpw("password123".encode(), bcrypt.gensalt()).decode()
-    user = User(name="Paras Jindal", email="paras@test.com", password=password)
+    user = User(name="abc", email="abc@test.com", password=password)
     db.session.add(user)
     db.session.commit()
 
@@ -62,5 +62,5 @@ with app.app_context():
     db.session.commit()
 
     print("✅ Dummy user created!")
-    print("Email: paras@test.com")
+    print("Email: abc@test.com")
     print("Password: password123")
